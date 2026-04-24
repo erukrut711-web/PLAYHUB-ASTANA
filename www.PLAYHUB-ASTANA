@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLAYHUB ASTANA | Все игры & Аниме</title>
+    <style>
+        :root {
+            --steam-blue: #66c0f4;
+            --steam-dark: #1b2838;
+            --card-bg: #16202d;
+        }
+
+        body {
+            background-color: var(--steam-dark);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(rgba(0,0,0,0.5), transparent);
+            border-radius: 15px;
+        }
+
+        h1 { font-size: 3.5rem; margin: 0; letter-spacing: 4px; }
+        h1 span { color: var(--steam-blue); }
+
+        /* Поиск и фильтры */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        input {
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid #2a475e;
+            background: #0f1720;
+            color: white;
+            width: 300px;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--steam-blue); }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background: #2a475e;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .filter-btn.active { background: var(--steam-blue); }
+
+        /* Сетка игр */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid transparent;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--steam-blue);
+        }
+
+        .game-img {
+            height: 120px;
+            background: #2a475e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .info { padding: 15px; }
+        .title { font-weight: bold; margin-bottom: 10px; height: 45px; overflow: hidden; }
+
+        .price {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .p-500 { background: #4c6b22; }
+        .p-1000 { background: #316282; }
+
+        .tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 64, 129, 0.8);
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>PLAYHUB <span>ASTANA</span></h1>
+        <p>Крупнейший магазин: Все игры мира + ANIME спецраздел</p>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Поиск игры (например: Genshin)...">
+        <button class="filter-btn active" onclick="filterCategory('all', this)">Все</button>
+        <button class="filter-btn" onclick="filterCategory('anime', this)">Аниме Игры</button>
+        <button class="filter-btn" onclick="filterCategory('top', this)">Хиты (1000 тг)</button>
+    </div>
+
+    <main class="games-grid" id="gameBox"></main>
+</div>
+
+<script>
+    const games = [
+        // Обычные игры (500 тг)
+        { name: "Minecraft", price: 500, cat: "all", icon: "🧱" },
+        { name: "Terraria", price: 500, cat: "all", icon: "🌳" },
+        { name: "CS 2", price: 500, cat: "all", icon: "🔫" },
+        { name: "Dota 2", price: 500, cat: "all", icon: "🛡️" },
+        { name: "Among Us", price: 500, cat: "all", icon: "🚀" },
+        
+        // Хорошие игры (1000 тг)
+        { name: "GTA V", price: 1000, cat: "top", icon: "🚗" },
+        { name: "Cyberpunk 2077", price: 1000, cat: "top", icon: "🦾" },
+        { name: "Elden Ring", price: 1000, cat: "top", icon: "⚔️" },
+        { name: "RDR 2", price: 1000, cat: "top", icon: "🐎" },
+
+        // Аниме игры
+        { name: "Genshin Impact", price: 1000, cat: "anime", icon: "✨" },
+        { name: "Honkai: Star Rail", price: 1000, cat: "anime", icon: "🚂" },
+        { name: "Naruto Storm 4", price: 500, cat: "anime", icon: "🦊" },
+        { name: "Demon Slayer", price: 1000, cat: "anime", icon: "👺" },
+        { name: "One Piece Odyssey", price: 1000, cat: "anime", icon: "🏴‍☠️" },
+        { name: "Blue Archive", price: 500, cat: "anime", icon: "🏫" }
+    ];
+
+    const box = document.getElementById('gameBox');
+    const search = document.getElementById('searchInput');
+
+    function draw(filter = 'all', query = '') {
+        box.innerHTML = '';
+        games.forEach(g => {
+            const matchSearch = g.name.toLowerCase().includes(query.toLowerCase());
+            const matchCat = filter === 'all' || g.cat === filter;
+
+            if (matchSearch && matchCat) {
+                const div = document.createElement('div');
+                div.className = 'game-card';
+                div.innerHTML = `
+                    ${g.cat === 'anime' ? '<span class="tag">ANIME</span>' : ''}
+                    <div class="game-img">${g.icon}</div>
+                    <div class="info">
+                        <div class="title">${g.name}</div>
+                        <div class="price ${g.price === 1000 ? 'p-1000' : 'p-500'}">${g.price} тг</div>
+                    </div>
+                `;
+                box.appendChild(div);
+            }
+        });
+    }
+
+    // Поиск в реальном времени
+    search.addEventListener('input', (e) => draw('all', e.target.value));
+
+    // Фильтр по кнопкам
+    function filterCategory(cat, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        draw(cat);
+    }
+
+    // Первый запуск
+    draw();
+</script>
+
+</body>
+</html>
